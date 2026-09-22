@@ -36,8 +36,8 @@ browser ── CloudFront ─┬─ /login.html, /style.css   public
 ```
 
 Every behaviour except the two public assets carries a trusted key group, so a
-viewer without valid signed cookies gets a 403. A `custom_error_response` maps
-that 403 to `/login.html` with a 200.
+viewer without valid signed cookies gets a 403. A `custom_error_response`
+serves `/login.html` in place of that 403, keeping the 403 status.
 
 Both function URLs are `authorization_type = "NONE"` and are protected by an
 `X-Origin-Verify` header that CloudFront adds and each function checks, so the
@@ -76,20 +76,89 @@ before the first apply and after any handler or `requirements.txt` change.
 | `project_name` | `mementos` | `variables.tf`, or `.env` `PROJECT_NAME` |
 | `session_hours` | `720` | `variables.tf`, or `.env` `SESSION_HOURS` |
 
-## Applying
+## First deploy
 
 The certificate has to validate before the distribution can use it, so the
 first deploy is two applies with a DNS change in between.
 
 ```bash
-python scripts/tf.py cert             # applies the certificate and prints its record
-# add the CNAMEs from the acm_validation_records output at your registrar
-python scripts/tf.py apply            # completes
-# point your domain at the cloudfront_domain_name output
+cp env.example .env                                 # then edit it
+python scripts/tf.py init
+python scripts/tf.py plan                           # check before creating anything
+python scripts/tf.py cert                           # stage one: the certificate
+                                                    # add the CNAME it prints
+python scripts/tf.py plan                           # once the CNAME resolves
+python scripts/tf.py apply                          # stage two: everything else
+python scripts/tf.py output cloudfront_domain_name  # point your domain here
 ```
 
+`tf.py cert` applies `aws_acm_certificate.site` alone and prints its
+validation record.
+
+### The two DNS records
+
+Both go in your domain's DNS panel, wherever the zone is hosted -- the
+registrar, or whatever nameservers it points at.
+
+| when | type | host | value |
+| --- | --- | --- | --- |
+| after `tf.py cert` | CNAME | the name from `acm_validation_records` | the value from the same output |
+| after the full apply | CNAME | your subdomain, e.g. `mementos` | the `cloudfront_domain_name` output |
+
+ACM prints the validation name fully qualified, ending in a dot:
+
+```
+_a1b2c3d4e5.mementos.example.com.
+```
+
+Most panels take only the part in front of the zone and append the rest:
+enter `_a1b2c3d4e5.mementos`. Drop the trailing dot unless the panel expects
+one. Paste the value as-is.
+
+Two checks before the second apply -- DNS first, then ACM:
+
+```powershell
+Resolve-DnsName _a1b2c3d4e5.mementos.example.com -Type CNAME
+aws acm list-certificates --region us-east-1 --profile $env:AWS_PROFILE `
+  --query "CertificateSummaryList[?DomainName=='$env:DOMAIN_NAME'].Status"
+```
+
+The record resolves within minutes of adding it; ACM moves from
+`PENDING_VALIDATION` to `ISSUED` within about another 30, and the second
+apply waits on that.
+
+The distribution takes a few minutes to finish deploying after the apply
+returns.
+
+Then:
+
+1. `python scripts/deploy_site.py`
+2. `python scripts/item_sync.py sync` -- see `scripts/README.md`.
+3. Open `https://<DOMAIN_NAME>`, enter `SITE_PASSWORD`.
+
+## Later applies
+
+`python scripts/tf.py plan`, then `python scripts/tf.py apply`. Re-run
+`build_lambdas.py` first if a handler changed; the zip's hash is what tells
+Terraform to redeploy the function.
+
 Changing the password is `SITE_PASSWORD` in `.env` and another apply. The
-Lambda reads SSM at call time, so no rebuild is needed.
+Lambda reads SSM at call time, so no rebuild is needed. Sessions already
+issued stay valid until they expire; `session_hours` sets that window.
+
+Changing `project_name` renames every resource, which replaces them.
+
+## Destroying
+
+`python scripts/tf.py destroy`. The bucket is versioned, so it must be
+emptied first, including old versions:
+
+```bash
+aws s3api delete-objects --bucket "$S3_BUCKET" --profile "$AWS_PROFILE" \
+  --delete "$(aws s3api list-object-versions --bucket "$S3_BUCKET" \
+  --profile "$AWS_PROFILE" --output json \
+  --query '{Objects: Versions[].{Key:Key,VersionId:VersionId}}')"
+```
 
 ## Outputs
 
