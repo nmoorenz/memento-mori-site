@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mementos</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='14'%3E%F0%9F%8F%B7%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <a class="home-link" href="/">Mementos</a>
+  <div class="header-right">
+    <a href="/add.html">Add something</a>
+    <a class="text-button" href="/auth/logout">Lock</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <div class="controls">
+    <label class="control">
+      Sort
+      <select id="sort-select">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="title">Name A-Z</option>
+        <option value="added">Recently added</option>
+      </select>
+    </label>
+    <label class="control">
+      When
+      <select id="when-select">
+        <option value="">Any year</option>
+      </select>
+    </label>
+    <div class="control">
+      <span id="tag-label">Tags</span>
+      <div class="dropdown">
+        <button type="button" id="tag-button" class="dropdown-button"
+                aria-haspopup="true" aria-expanded="false">All tags</button>
+        <div id="tag-menu" class="dropdown-menu" role="group"
+             aria-labelledby="tag-label" hidden></div>
+      </div>
+    </div>
+    <label class="search">
+      <input type="search" id="search-input" placeholder="Search" aria-label="Search" />
+    </label>
+    <button id="clear-filters" class="text-button" hidden>Clear filters</button>
+  </div>
+
+  <p id="item-count" class="muted"></p>
+  <div id="grid" class="masonry"></div>
+
+  <p id="status" class="status" hidden></p>
+
+</main>
+
+<div id="lightbox" class="lightbox" hidden>
+  <button id="lightbox-close" class="lightbox-close" aria-label="Close">&times;</button>
+  <button id="lightbox-prev" class="lightbox-nav prev" aria-label="Previous">&#8249;</button>
+  <button id="lightbox-next" class="lightbox-nav next" aria-label="Next">&#8250;</button>
+  <div class="lightbox-inner">
+    <div class="lightbox-image">
+      <img id="lightbox-img" alt="" />
+    </div>
+    <aside class="lightbox-side">
+      <h2 id="lightbox-title"></h2>
+      <p id="lightbox-date" class="muted small"></p>
+      <p id="lightbox-caption" class="lightbox-caption"></p>
+      <div id="lightbox-tags" class="item-tags"></div>
+      <p id="lightbox-count" class="lightbox-count"></p>
+    </aside>
+  </div>
+</div>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>

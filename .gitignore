@@ -1,0 +1,32 @@
+# Secrets and per-deployment config
+.env
+
+# Your own photos and the items.csv describing them. The folder is tracked so
+# a fresh clone has somewhere to put things; its contents are not.
+# example/ holds the same shape with invented items, and IS committed.
+photos/*
+!photos/.gitkeep
+!photos/README.md
+
+# Generated: deploy artefacts and the local preview
+build/
+site/manifest.json
+site/sample-photos/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Terraform. There is no terraform.tfvars: it would override what tf.py
+# passes from .env, so everything comes from .env or a default in variables.tf.
+.terraform/
+terraform.tfvars
+*.auto.tfvars
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+infrastructure/build/
+infrastructure/dist/

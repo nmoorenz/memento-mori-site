@@ -1,0 +1,3 @@
+# The bundled runtime boto3 can predate PutObject's If-Match / If-None-Match
+# parameters, so pin a version that has them.
+boto3>=1.35

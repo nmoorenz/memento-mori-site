@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Add something</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='14'%3E%F0%9F%8F%B7%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <a class="home-link" href="/">Mementos</a>
+  <div class="header-right">
+    <a class="text-button" href="/auth/logout">Lock</a>
+  </div>
+</header>
+
+<main id="main" class="form-page">
+  <h1>Add something</h1>
+  <p class="hint">Photograph the thing, give it a name, say what it is. Several photos of the same object go on the one item.</p>
+
+  <form id="add-form">
+    <div class="field">
+      <label for="title">What is it?</label>
+      <input type="text" id="title" maxlength="200" required />
+    </div>
+
+    <div class="field">
+      <label for="caption">What do you want to say about it?</label>
+      <textarea id="caption" rows="5" maxlength="4000"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="date">When (YYYY, YYYY-MM or YYYY-MM-DD)</label>
+      <input type="text" id="date" placeholder="1988" />
+    </div>
+
+    <div class="field">
+      <label for="tags">Tags, separated by spaces</label>
+      <input type="text" id="tags" placeholder="school badges scouts" />
+    </div>
+
+    <div class="field">
+      <label>Photos</label>
+      <label class="drop-zone" id="drop-zone">
+        Drop photos here, or click to choose
+        <input type="file" id="files" accept="image/*" multiple />
+      </label>
+      <div class="preview-strip" id="previews"></div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="button" id="submit">Add it</button>
+      <span id="progress" class="muted small"></span>
+      <span id="error" class="error"></span>
+    </div>
+  </form>
+</main>
+
+<script type="module" src="/add.js"></script>
+</body>
+</html>
